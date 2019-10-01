@@ -1,155 +1,152 @@
-/*
-Create by Learn Web Developement
-Youtube channel : https://www.youtube.com/channel/UC8n8ftV94ZU_DJLOLtrpORA
-*/
-
 const cvs = document.getElementById("snake");
 const ctx = cvs.getContext("2d");
+var brzina=100;
+/*jedna celihja-duzine 32 piksela*/
 
-// create the unit
-const box = 32;
+const celija = 32;
 
-// load images
+// img fajl pozadine i poena
 
 const ground = new Image();
-ground.src = "img/ground.png";
+ground.src = "img/groundcopy.png";
 
 const foodImg = new Image();
 foodImg.src = "img/food.png";
 
-// load audio files
+// audio fajlovi
 
-let dead = new Audio();
-let eat = new Audio();
-let up = new Audio();
-let right = new Audio();
-let left = new Audio();
-let down = new Audio();
+var dead = new Audio();
+var eat = new Audio();
 
 dead.src = "audio/dead.mp3";
 eat.src = "audio/eat.mp3";
-up.src = "audio/up.mp3";
-right.src = "audio/right.mp3";
-left.src = "audio/left.mp3";
-down.src = "audio/down.mp3";
 
-// create the snake
 
-let snake = [];
+// inicijalizacija zmije kao niz koji ce kasnije postati niz krugova
+var snake = [];
 
-snake[0] = {
-    x : 9 * box,
-    y : 10 * box
+snake[0] = 
+{
+    x : 9 * celija,
+    y : 10 * celija
 };
 
-// create the food
+// generisanje poena na nasumicnim celijama
 
-let food = {
-    x : Math.floor(Math.random()*17+1) * box,
-    y : Math.floor(Math.random()*15+3) * box
+var food = 
+{
+    x : Math.floor(Math.random()*17+1) * celija+16,
+    y : Math.floor(Math.random()*15+3) * celija+16
 }
 
-// create the score var
+// inicijalizacija bodova
 
-let score = 0;
+var score = 0;
 
-//control the snake
+//dio za kontrole
 
-let d;
+var unos;//d je unos iz tastature
 
-document.addEventListener("keydown",direction);
+document.addEventListener("keydown",smjer);
 
-function direction(event){
-    let key = event.keyCode;
-    if( key == 37 && d != "RIGHT"){
-        left.play();
-        d = "LEFT";
-    }else if(key == 38 && d != "DOWN"){
-        d = "UP";
-        up.play();
-    }else if(key == 39 && d != "LEFT"){
-        d = "RIGHT";
-        right.play();
-    }else if(key == 40 && d != "UP"){
-        d = "DOWN";
-        down.play();
+function smjer(event){
+    var key = event.keyCode;
+    if( key == 37 &&unos!= "RIGHT"){
+       unos= "LEFT";
+        
+    }else if(key == 38 &&unos!= "DOWN"){
+       unos= "UP";
+       
+    }else if(key == 39 &&unos!= "LEFT"){
+       unos= "RIGHT";
+        
+    }else if(key == 40 &&unos!= "UP"){
+       unos= "DOWN";
+        
     }
 }
 
-// cheack collision function
-function collision(head,array){
-    for(let i = 0; i < array.length; i++){
-        if(head.x == array[i].x && head.y == array[i].y){
+
+// funkcija za collision, ili ti ga sudaranje
+function collision(glava,zmija){
+    for(var i = 0; i < zmija.length; i++){
+        if(glava.x == zmija[i].x && glava.y == zmija[i].y){
             return true;
         }
     }
     return false;
 }
 
-// draw everything to the canvas
+// gdje se magija desava, sve se crta sto je napravljeno
 
 function draw(){
     
-    ctx.drawImage(ground,0,0);
+    ctx.drawImage(ground,0,0);//pozadina
     
-    for( let i = 0; i < snake.length ; i++){
-        ctx.fillStyle = ( i == 0 )? "green" : "white";
-        ctx.fillRect(snake[i].x,snake[i].y,box,box);
+    for( var i = 0; i < snake.length ; i++){
         
+        ctx.beginPath();
+        ctx.arc(snake[i].x+16,snake[i].y+16,celija/2, 0, 2 * Math.PI);
         ctx.strokeStyle = "red";
-        ctx.strokeRect(snake[i].x,snake[i].y,box,box);
+        ctx.fillStyle = ( i == 0 )? "darkred" : "red";
+        ctx.fill();
+        ctx.stroke();
+        
+       
     }
     
     ctx.drawImage(foodImg, food.x, food.y);
     
-    // old head position
-    let snakeX = snake[0].x;
-    let snakeY = snake[0].y;
+    // pozicija prvobitne glave
+    var snakeX = snake[0].x;
+    var snakeY = snake[0].y;
     
-    // which direction
-    if( d == "LEFT") snakeX -= box;
-    if( d == "UP") snakeY -= box;
-    if( d == "RIGHT") snakeX += box;
-    if( d == "DOWN") snakeY += box;
+    // koji smjer
+    if(unos== "LEFT") snakeX -= celija/2;
+    if(unos== "UP") snakeY -= celija/2;
+    if(unos== "RIGHT") snakeX += celija/2;
+    if(unos== "DOWN") snakeY += celija/2;
     
-    // if the snake eats the food
+    // jedenje jabuke
     if(snakeX == food.x && snakeY == food.y){
         score++;
         eat.play();
         food = {
-            x : Math.floor(Math.random()*17+1) * box,
-            y : Math.floor(Math.random()*15+3) * box
+            x : Math.floor(Math.random()*17+1) * celija,
+            y : Math.floor(Math.random()*15+3) * celija
         }
-        // we don't remove the tail
+        
     }else{
-        // remove the tail
+        
         snake.pop();
     }
     
-    // add new Head
+    // dodavanje nove glave
     
-    let newHead = {
+    var novaGlava = {
         x : snakeX,
         y : snakeY
     }
     
     // game over
     
-    if(snakeX < box || snakeX > 17 * box || snakeY < 3*box || snakeY > 17*box || collision(newHead,snake)){
+    if(snakeX < celija || snakeX > 17 * celija || snakeY < 3*celija || snakeY > 17*celija || collision(novaGlava,snake)){
         clearInterval(game);
         dead.play();
     }
     
-    snake.unshift(newHead);
-    
-    ctx.fillStyle = "white";
+    snake.unshift(novaGlava);
+    //oznacavanje score-a
+    ctx.fillStyle = "black";
     ctx.font = "45px Changa one";
-    ctx.fillText(score,2*box,1.6*box);
+    ctx.fillText(score,2*celija,1.6*celija);
 }
 
-// call draw function every 100 ms
+// draw funkcija, glavna funkcija se poziva svakih 100ms, moze oznacavati franmerate
 
-let game = setInterval(draw,100);
+var game = setInterval(draw,brzina);
+
+
 
 
 
